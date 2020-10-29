@@ -23,7 +23,7 @@ Steps for Launching this Cloudformation template:
          
 2) After cloning the template, jump to aws console and select Cloudformation service there we can upload our template from our localhost or by s3 bucket url. 
 
-3) After uploading the template click on next, you can specify your stack details and parameters like Instancetype, keyname, ssh location and most importantly VpcCidr range.
+3) After uploading the template click on next, you can specify your stack details and parameters like Instancetype, keyname, ssh location and most importantly        VpcCidr range.
 
 4) On the next step you can go with default stack configuration options so click on next.
 
