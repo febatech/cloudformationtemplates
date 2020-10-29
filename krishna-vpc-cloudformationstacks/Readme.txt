@@ -11,7 +11,7 @@ Resources defined in the Cloudformation template:
 * Ec2 Instances: 2
 
 Description:
-* With this Cloudformation template we can deploy new vpc with 2 public subnets and internet gateway attached to VPC . With-in this template We are creating  route tables  for subnet association and also we are adding an internet gateway in the routing table for sending traffic from the subnets. In addition we are creating a launch template with ec2 properties and creating an autoscaling group with the launch template as a source. By default it deploys 2Ec2 instances with httpd pre-installed with  user data in 2 subnets and we are also enabling load balancer to balance the traffic for the desired 2 ec2 instances in the autoscaling group. After deploying Finally we can access a html page showing the message “WELCOME TO FEBATECH WEB SERVER” with the load balancer dns name. 
+* With this Cloudformation template we can deploy new vpc with 2 public subnets and internet gateway attached to VPC . With-in this template We are creating  route tables  for subnet association and also we are adding an internet gateway in the routing table for sending traffic from the subnets. In addition we are creating a launch template with ec2 properties and also creating an autoscaling group with the launch template as a source. By default it deploys 2Ec2 instances with httpd pre-installed with user data in 2 subnets. we are also enabling load balancer to balance the traffic for the desired 2 ec2 instances in the autoscaling group. After deploying all the resources we can access a html page showing the message “WELCOME TO FEBATECH WEB SERVER” with the load balancer dns name. 
 
 Steps for Launching this Cloudformation template:
 
