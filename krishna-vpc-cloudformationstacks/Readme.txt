@@ -15,19 +15,16 @@ Description:
 
 Steps for Launching this Cloudformation template:
 
-1. You can get this cloudformation template with the name “vpc.yaml” from this s3 link:    
+1) You can get this cloudformation template with the name “vpc.yaml” from this s3 link:    
          s3://febatech-cf-templates-to-deploy-workloads/Krishna-VPC-CloudFormationStacks/
                                                   or
    You can also clone this template from the below Github url:
          https://github.com/febatech/cloudformationtemplates.git
+         
+2) After cloning the template, jump to aws console and select Cloudformation service there we can upload our template from our localhost or by s3 bucket url. 
 
+3) After uploading the template click on next, you can specify your stack details and parameters like Instancetype, keyname, ssh location and most importantly VpcCidr range.
 
-2. After cloning the template, jump to aws console and select Cloudformation service there we can upload our template from our localhost or by s3 bucket url. 
+4) On the next step you can go with default stack configuration options so click on next.
 
-3. After uploading the template click on next, you can specify your stack details and parameters like Instancetype, keyname, ssh location and most importantly VpcCidr range.
-
-
-4. On the next step you can go with default stack configuration options so click on next.
-
-
-5. Finally click on “Create Stack” for deploying all the resources in the template and we can also delete all the resources by clicking on “Delete Stack”.
+5) Finally click on “Create Stack” for deploying all the resources in the template and we can also delete all the resources by clicking on “Delete Stack”.
