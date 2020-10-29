@@ -1,0 +1,161 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Metadata: 
+  AWS::CloudFormation::Interface:
+    ParameterGroups: 
+      - 
+        Label: 
+          default: Environment Type
+        Parameters: 
+          - EnvType
+      - 
+        Label: 
+          default: "Instance Configuration"
+        Parameters: 
+          - EC2InstanceTypeT
+          - EC2InstanceTypeP
+      
+      - 
+        Label: 
+          default: "EC2 Configuration"
+        Parameters: 
+          - KeyName
+          - SSHLocation
+          - EC2Subnet
+
+
+Parameters:
+    
+    KeyName:
+      Description: The EC2 Key Pair to allow SSH access to the instance
+      Type: AWS::EC2::KeyPair::KeyName
+      ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    SSHLocation:
+      Description: The IP address range that can be used to SSH to the EC2 instances
+      Type: String
+      MinLength: '9'
+      MaxLength: '18'
+      Default: 0.0.0.0/0
+      AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+      ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    EnvType: 
+      Description: Environment type.
+      Default: test
+      Type: String
+      AllowedValues: 
+        - production
+        - test
+      ConstraintDescription: must specify production or test.
+
+    EC2InstanceTypeT:
+      Description: WebServer EC2 instance type, ignore if you choose Production Env.
+      Type: String
+      Default: None
+      AllowedValues:
+        - None 
+        - t2.nano
+        - t2.micro
+        - t2.small
+        - t2.medium
+        - t2.large
+        - t2.xlarge
+        - t2.2xlarge  
+
+    EC2InstanceTypeP:
+      Description: WebServer EC2 instance type, ignore if you choose Test Env.
+      Type: String
+      Default: None
+      AllowedValues:
+        - None  
+        - m4.large
+        - m4.xlarge
+        - m4.2xlarge
+        - m4.4xlarge
+        - m4.10xlarge
+        - m5.large
+        - m5.xlarge    
+    
+
+    EC2Subnet:
+      Description: Choose a subnet to deploy your instance
+      Type: AWS::EC2::Subnet::Id
+
+Conditions:
+    Prod: !Equals [!Ref EnvType, production]    
+    
+
+Mappings:
+  RegionMap:
+     us-east-1:
+        AMI: "ami-0ff8a91507f77f867"
+      us-west-1:
+        AMI: "ami-0bdb828fd58c52235"
+      us-west-2:
+        AMI: "ami-a0cfeed8"
+      eu-west-1:
+        AMI: "ami-047bb4163c506cd98"
+      sa-east-1:
+        AMI: "ami-07b14488da8ea02a0"
+      ap-southeast-1:
+        AMI: "ami-08569b978cc4dfa10"
+      ap-southeast-2:
+        AMI: "ami-09b42976632b27e9b"
+      ap-northeast-1:
+        AMI: "ami-06cd52961ce9f0d85"
+      ap-south-1:
+        AMI: "ami-0912f71e06545ad88"
+      us-east-2:
+        AMI: "ami-0b59bfac6be064b78"
+      ap-northeast-2:
+        AMI: "ami-0a10b2721688ce9d2"
+      ca-central-1:
+        AMI: "ami-0b18956f"
+      eu-central-1:
+        AMI: "ami-0233214e13e500f77"
+      eu-west-2:
+        AMI: "ami-f976839e"
+      eu-west-3:
+        AMI: "ami-0ebc281c20e89ba4b"
+
+Resources:
+ 
+  WebServer:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      SecurityGroupIds:
+          - !GetAtt WebServerSecurityGroup.GroupId
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref AWS::Region
+        - AMI
+      InstanceType: !If [Prod, !Ref EC2InstanceTypeP, !Ref EC2InstanceTypeT]
+      SubnetId: !Ref EC2Subnet
+      UserData:
+          Fn::Base64: |
+            #!/bin/bash
+            yum update -y
+            yum install httpd -y
+            service httpd start
+            chkconfig httpd on
+            host_name=`curl -s http://169.254.169.254/latest/meta-data/local-hostname`
+            echo "WELCOME TO FEBATECH WEB SERVER $host_name" > /var/www/html/index.html
+
+  WebServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enables web access and allows SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+  

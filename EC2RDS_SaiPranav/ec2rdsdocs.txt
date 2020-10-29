@@ -1,0 +1,47 @@
+Creates an EC2 Instance and an RDSDB Instance with Mysql engine.
+
+Description:
+
+Using this CloudFormationTemplate you get to choose the EnvironmentType(production, test). You can configure EC2Instancetype as well as RDSDB InstanceType according to the choosen environment. RDSDB Instance can be deployed in multiple subnets to increase availability. You can connect to the EC2Instance via SSH as well. Linux AMI is being used for the EC2Instance. Security Groups are created such that the traffic from EC2Instance reaches the RDSDB Instance.
+
+
+
+Using this template, the following resources are provisioned:
+
+1) EC2 Instance 
+2) RDSDB Instance
+3) EC2 SecurityGroup
+4) RDSDB SecurityGroup
+5) DBSubnetGroup
+
+
+Steps to follow:
+
+1) Get the template from the following link.
+   
+   
+
+2) Clone the template.
+
+3) Using the CloudFormation Service, create a stack using this template.
+
+4) Enter the values as per your requirement, in the parameters section.
+
+5) Click on 'Next'.
+
+6) Add Tags, click on 'Next'.
+ 
+7) Click on 'Create Stack'.
+
+8) Hit the ECInstance using its IPAddress.
+ 
+9) SSH into the EC2Instance and connect to the RDSDB Instance using the following commands.
+
+   sudo su
+   yum install mysql -y
+   mysql --version
+   mysql -h (rdsendpoint) -P 3306 -u (masterusername) -p 
+   show databases;
+  
+
+7) Then Delete the Stack.
