@@ -1,0 +1,36 @@
+prequisites: You need to have aws cli and and you should have access for EKS,EC2,VPC,Cloudformation Services for your IAM user.
+
+step1:
+Execute a Bootstrap script for creating eksctl and kubectl.  
+Command to execute:
+./kube.sh
+
+step2:
+We are Creating cluster and node groups using yaml file.
+Command to execute yaml file:
+eksctl create cluster -f cluster.yaml
+
+step3:
+create a deployment for image to run inside the cluster.
+aws eks list-clusters                     # shows created list of clusters
+kubectl get pods                          # shows number of pods and its status
+kubectl get nodes -o wide                 # shows number of nodes and its status 
+kubectl get replicaset                    # shows replica sets of images
+kubectl get svc                           # shows exposed nginx containers
+eksctl delete cluster --name testcluster  # deletes cluster
+kubectl delete deployment (deployment-name) # for deleting deployment
+kubectl -n default delete pods --field-selector=status.phase=Failed   # to delete pods in failed state
+
+#applying our deployment file 
+kubectl apply -f myeks.yaml
+
+step4:
+Finally we can expose our nginx containers using this command:
+kubectl expose deployment/my-dp1 \
+        --port=80 --target-port=80 \
+        --name=my-nginx-service --type=LoadBalancer
+kubectl get svc   # shows exposed nginx containers  
+
+
+
+

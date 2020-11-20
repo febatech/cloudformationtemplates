@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-dp1
+spec:
+  selector:
+    matchLabels:
+      run: my-dp1
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: my-dp1
+    spec:
+      containers:
+      - name: my-dp1
+        image: nginx
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80

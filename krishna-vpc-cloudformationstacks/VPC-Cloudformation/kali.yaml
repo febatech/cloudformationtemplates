@@ -1,0 +1,226 @@
+Parameters:
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  InstanceType:
+    Default: 't2.medium'
+    Type: String
+
+Mappings:
+  AWSInstanceType2Arch:
+    t1.micro:
+      Arch: AMI
+    t2.nano:
+      Arch: AMI
+    t2.micro:
+      Arch: AMI
+    t2.small:
+      Arch: AMI
+    t2.medium:
+      Arch: AMI
+    t2.large:
+      Arch: AMI
+    m1.small:
+      Arch: AMI
+    m1.medium:
+      Arch: AMI
+    m1.large:
+      Arch: AMI
+    m1.xlarge:
+      Arch: AMI
+    m2.xlarge:
+      Arch: AMI
+    m2.2xlarge:
+      Arch: AMI
+    m2.4xlarge:
+      Arch: AMI
+    m3.medium:
+      Arch: AMI
+    m3.large:
+      Arch: AMI
+    m3.xlarge:
+      Arch: AMI
+    m3.2xlarge:
+      Arch: AMI
+    m4.large:
+      Arch: AMI
+    m4.xlarge:
+      Arch: AMI
+    m4.2xlarge:
+      Arch: AMI
+    m4.4xlarge:
+      Arch: AMI
+    m4.10xlarge:
+      Arch: AMI
+    c1.medium:
+      Arch: AMI
+    c1.xlarge:
+      Arch: AMI
+    c3.large:
+      Arch: AMI
+    c3.xlarge:
+      Arch: AMI
+    c3.2xlarge:
+      Arch: AMI
+    c3.4xlarge:
+      Arch: AMI
+    c3.8xlarge:
+      Arch: AMI
+    c4.large:
+      Arch: AMI
+    c4.xlarge:
+      Arch: AMI
+    c4.2xlarge:
+      Arch: AMI
+    c4.4xlarge:
+      Arch: AMI
+    c4.8xlarge:
+      Arch: AMI
+    g2.2xlarge:
+      Arch: AMI
+    g2.8xlarge:
+      Arch: AMI
+    r3.large:
+      Arch: AMI
+    r3.xlarge:
+      Arch: AMI
+    r3.2xlarge:
+      Arch: AMI
+    r3.4xlarge:
+      Arch: AMI
+    r3.8xlarge:
+      Arch: AMI
+    i2.xlarge:
+      Arch: AMI
+    i2.2xlarge:
+      Arch: AMI
+    i2.4xlarge:
+      Arch: AMI
+    i2.8xlarge:
+      Arch: AMI
+    d2.xlarge:
+      Arch: AMI
+    d2.2xlarge:
+      Arch: AMI
+    d2.4xlarge:
+      Arch: AMI
+    d2.8xlarge:
+      Arch: AMI
+    hi1.4xlarge:
+      Arch: AMI
+    hs1.8xlarge:
+      Arch: AMI
+    cr1.8xlarge:
+      Arch: AMI
+    cc2.8xlarge:
+      Arch: AMI
+
+  AWSRegionArch2AMI:
+    us-east-1:
+      AMI: ami-01f9e4b812276174b
+    us-east-2:
+      AMI: ami-076121d3f8ef0caa1
+    us-west-1:
+      AMI: ami-05a38b348888420ad
+    us-west-2:
+      AMI: ami-06fb8b1d5809dec8a
+    af-south-1:
+      AMI: ami-00eedb3635fd5855b
+    ap-east-1:
+      AMI: ami-05a91585feddbc79e
+    ap-south-1:
+      AMI: ami-0219bb97ebefc13b4
+    ap-northeast-2:
+      AMI: ami-093ca05411b2f0a18
+    ap-southeast-1:
+      AMI: ami-0bb1a05e6e03be66c
+    ap-southeast-2:
+      AMI: ami-00c98fdd264648a69
+    ap-northeast-1:
+      AMI: ami-0af971be07bef8f60
+    ca-central-1:
+      AMI: ami-0f4fed2cf2c5372b7
+    eu-central-1:
+      AMI: ami-096a99b22bcd2a655
+    eu-west-1:
+      AMI: ami-0d337ee69f627b10c
+    eu-west-2:
+      AMI: ami-0e29aec7ec7c6f354
+    eu-south-1:
+      AMI: ami-05e022be1ecd0b8e3
+    eu-west-3:
+      AMI: ami-0a79a6735f5a6484f
+    eu-north-1:
+      AMI: ami-0a7340bdff099b90e
+    me-south-1:
+      AMI: ami-04b65700efd014c7e
+    sa-east-1:
+      AMI: ami-0b6e1e8e5d7bedf68
+             
+Resources:
+  WebServer:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId:
+        Fn::FindInMap:
+          - AWSRegionArch2AMI
+          - Ref: AWS::Region
+          - Fn::FindInMap:
+              - AWSInstanceType2Arch
+              - Ref: InstanceType
+              - Arch
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      UserData:
+        Fn::Base64: |
+        #!/bin/bash
+        sudo apt-get update -y
+        sudo apt-get install kali-desktop-xfce -y
+        sudo apt-get install xfce4-session -y
+        sudo apt-get install tightvncserver -y
+        sudo apt-get install -y novnc x11vnc
+
+   
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+
+        
+
+
+
+
+
+
+
+    
