@@ -461,7 +461,7 @@ Resources:
         - !Ref NodeInstanceRole
 
   EKSNodegroup:
-    Type: 'op'  
+    Type: 'AWS::EKS::Nodegroup'  
     Properties:
       ClusterName: !Ref ClusterName
       InstanceTypes: !Ref NodeInstanceType
