@@ -1,0 +1,7 @@
+vpc-0389dbee09ffe425b
+subnet-07ef09b0862d182e2
+subnet-01ef14414483fde4b
+subnet-0e9f2c8678d7708f1
+subnet-0c117800b2fbaae24
+192.168.1.1
+/mnt

@@ -1,0 +1,11 @@
+version: '3'
+services:
+   ngnix:
+     restart: always
+     image: vponnap/welcometofebatecheks:2
+     container_name: nginxctrlocal
+     ports:
+       - "14256:443"
+       - "14243:80"
+     volumes:
+      - /var/lib/docker/volumes/nginxhome/_data:/data/db

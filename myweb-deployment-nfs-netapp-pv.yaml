@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-pv-service-nfs-dynamic
+spec:
+  selector:
+    app: myapppvd
+  ports:
+    - name: http
+      protocol: TCP
+      # Port accessible inside cluster
+      port: 9090
+       # Port to forward to inside the pod
+      targetPort: 80
+      # Port accessible outside cluster
+      nodePort: 30034
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+      # Using node IP:30003
+      nodePort: 30035
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claimd
+  labels:
+    app: myapppvd
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-netapp 
+  resources:
+    requests:
+      storage: 1Gi   
+---  
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: nginx-deplmntpvd
+spec:
+  selector:
+    matchLabels:
+      app: myapppvd
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: myapppvd
+    spec:
+      containers:
+      - name: nginxcntrnetapp
+        image: vponnap/welcometofebatecheks:2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: task-pv-storage-dynamic
+          mountPath: /mnt/netappdata
+      volumes:
+      - name: task-pv-storage-dynamic
+        persistentVolumeClaim:
+          claimName: claimd

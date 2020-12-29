@@ -1,0 +1,34 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: EKS-Demo-mumbai-mgd-cluster
+  region: ap-south-1
+  version: "1.18"
+vpc:
+  id: <%= vpcid %>
+  cidr: "192.168.0.0/16"
+  subnets:
+    public:
+      ap-south-1a:
+        id: <%= pubsubnet1a %>
+      ap-south-1b:
+        id: <%= pubsubnet1b %>
+    private:
+      ap-south-1a:
+        id: <%= prisubnet1a %>
+      ap-south-1b:
+        id: <%= prisubnet1b %>
+
+managedNodeGroups:
+  - name: EKS-managed-public-workers
+    minSize: 2
+    maxSize: 2
+    desiredCapacity: 2
+    volumeSize: 5
+    instanceType: t2.micro
+  - name: EKS-managed-private-workers
+    instanceType: t2.micro
+    minSize: 2
+    maxSize: 2
+    desiredCapacity: 2
+    privateNetworking: true

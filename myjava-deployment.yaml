@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-java-service
+spec:
+  selector:
+    app: myjavaapp
+  ports:
+    - name: http
+      protocol: TCP
+      # Port accessible inside cluster
+      port: 8090
+       # Port to forward to inside the pod
+      targetPort: 8090
+      # Port accessible outside cluster
+      nodePort: 30008
+  type: LoadBalancer
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: java-deplmnt
+spec:
+  selector:
+    matchLabels:
+      app: myjavaapp
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: myjavaapp
+    spec:
+      containers:
+      - name: javacntr
+        image: vponnap/myfirstdemo:5
+        ports:
+        - containerPort: 8090

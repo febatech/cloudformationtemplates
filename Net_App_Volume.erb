@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mynfspersistentvolume
+  labels:
+    type: nfs
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: <%= CVOMountPt %>
+    server: <%= netapp_url %>
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: nfs-netapp

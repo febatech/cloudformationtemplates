@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-pv-service-dynamic
+spec:
+  selector:
+    app: myapppvd
+  ports:
+    - name: http
+      protocol: TCP
+      # Port accessible inside cluster
+      port: 8090
+       # Port to forward to inside the pod
+      targetPort: 80
+      # Port accessible outside cluster
+      nodePort: 30023
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+      # Using node IP:30003
+      nodePort: 30024
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claimd
+  labels:
+    app: myapppvd
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi   
+---  
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: nginx-deplmntpvd
+spec:
+  selector:
+    matchLabels:
+      app: myapppvd
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: myapppvd
+    spec:
+      containers:
+      - name: nginxcntr
+        image: vponnap/welcometofebatecheks:2
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: task-pv-storage-dynamic
+          mountPath: /mnt/data
+      volumes:
+      - name: task-pv-storage-dynamic
+        persistentVolumeClaim:
+          claimName: claimd
