@@ -6,6 +6,7 @@ Before starting you need the following:
 * EKSCTL
 * Ruby
 * krishna deepak
+* Sai Pranav
 
 ## Provision EKS cluster with Node group.
 * Create cloudformation stack for EKS and Its Node group.
