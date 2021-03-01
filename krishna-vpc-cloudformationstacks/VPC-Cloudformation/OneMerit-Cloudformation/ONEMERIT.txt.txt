@@ -1,0 +1,23 @@
+﻿# With this Template we can Launch Instances using AMI-Id in the Existing Vpc and Subnet ID's with the Autoscaling and Loadbalancing resources. 
+
+Resources defined in the Cloudformation template:
+* Launch templates: 1
+* Autoscaling Group: 1
+* Application Load balancer: 1
+* Ec2 Instances: Desired 
+
+Description:
+* With this Cloudformation template We are creating a Launch template with Ec2 properties and also creating an Autoscaling group with the launch template as a source. By default it Launches Desired Ec2 instances from the specified AMI-ID. Finally we are enabling Application Loadbalancer to balance the traffic for the desired Ec2 instances in the Autoscaling group in the Existing Vpc and Subnet ID's. 
+
+Steps for Launching this Cloudformation template:
+
+1) You can get this cloudformation template with the name “ONEMERIT-VPC.yaml” from this Github Url:    
+        https://github.com/krishnadeepak25/Onemerit-Cloudformation/blob/master/ONEMERIT.yaml
+         
+2) After cloning the template, jump to aws console and select Cloudformation service there we can upload our template from our localhost. 
+
+3) After uploading the template click on next, you can specify your stack details and parameters like Instancetype, keyname, ssh location, VpcCidr, SubnetCidr, SecuritygroupdId's, ImageId and most importantly AutoScalingGroupDesiredCapacity.
+
+4) On the next step you can go with default stack configuration options so click on next.
+
+5) Finally click on “Create Stack” for deploying all the resources in the template and we can also delete all the resources by clicking on “Delete Stack”.

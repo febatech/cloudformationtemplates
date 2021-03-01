@@ -1,0 +1,27 @@
+﻿# With this Template We can Deploy new Vpc and Subnets and can launch Instances using AMI-Id in the Default Region with Autoscaling and Loadbalancing Resources. 
+
+Resources defined in the Cloudformation template:
+* Vpc: 1
+* Public Subnets: 3
+* Internet Gateway: 1
+* Routing Table: 1
+* Launch templates: 1
+* Autoscaling Group: 1
+* Application Load balancer: 1
+* Ec2 Instances: Desired 
+
+Description:
+* With this Cloudformation template We can deploy new Vpc with 3Publicsubnets and Internetgateway attached to VPC. With-in this template We are creating Routetable for Subnet-association and also we are adding an Internet gateway in the Routingtable for sending traffic from the subnets. In addition we are creating a Launch template with Ec2 properties and also creating an Autoscaling group with the launch template as a source. By default it Launches 1Ec2 instances from the specified AMI-ID. Finally we are enabling Application Loadbalancer to balance the traffic for the desired Ec2 instances in the Autoscaling group. 
+
+Steps for Launching this Cloudformation template:
+
+1) You can get this cloudformation template with the name “ONEMERIT-VPC.yaml” from this Github Url:    
+         https://github.com/krishnadeepak25/Onemerit-Cloudformation/blob/master/ONEMERIT-VPC.yaml
+         
+2) After cloning the template, jump to aws console and select Cloudformation service there we can upload our template from our localhost. 
+
+3) After uploading the template click on next, you can specify your stack details and parameters like Instancetype, keyname, ssh location, VpcCidr, ImageId and most importantly AutoScalingGroupDesiredCapacity.
+
+4) On the next step you can go with default stack configuration options so click on next.
+
+5) Finally click on “Create Stack” for deploying all the resources in the template and we can also delete all the resources by clicking on “Delete Stack”.
