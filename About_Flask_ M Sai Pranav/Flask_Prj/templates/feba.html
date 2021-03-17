@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    body {text-align:center}
+</style>
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <img src="{{url_for('static', filename='logo_1.jpg')}}" align="middle" />
+    <h1>KARDFINDER</h1>
+    <h2>json file generator for banks</h2>
+     <form method="POST" action="/dropdown">
+        <select name="bank">
+      <option value="{{banks[0]}}" selected>{{banks[0]}}</option>
+      {% for colour in banks[1:] %}
+        <option value="{{colour}}">{{colour}}</option>
+      {% endfor %}
+        </select>
+      <input type="submit" value ="Submit">
+      </form>
+</body>
+</html>
