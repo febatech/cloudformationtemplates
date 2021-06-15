@@ -1,0 +1,268 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS cloudformation template to create ec2 instance with apache,tomcat,jenkins,docker using boot strap script
+Parameters:
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  InstanceType:
+    Default: 't2.small'
+    Type: String
+
+Mappings:
+  AWSInstanceType2Arch:
+    t1.micro:
+      Arch: AMI
+    t2.nano:
+      Arch: AMI
+    t2.micro:
+      Arch: AMI
+    t2.small:
+      Arch: AMI
+    t2.medium:
+      Arch: AMI
+    t2.large:
+      Arch: AMI
+    m1.small:
+      Arch: AMI
+    m1.medium:
+      Arch: AMI
+    m1.large:
+      Arch: AMI
+    m1.xlarge:
+      Arch: AMI
+    m2.xlarge:
+      Arch: AMI
+    m2.2xlarge:
+      Arch: AMI
+    m2.4xlarge:
+      Arch: AMI
+    m3.medium:
+      Arch: AMI
+    m3.large:
+      Arch: AMI
+    m3.xlarge:
+      Arch: AMI
+    m3.2xlarge:
+      Arch: AMI
+    m4.large:
+      Arch: AMI
+    m4.xlarge:
+      Arch: AMI
+    m4.2xlarge:
+      Arch: AMI
+    m4.4xlarge:
+      Arch: AMI
+    m4.10xlarge:
+      Arch: AMI
+    c1.medium:
+      Arch: AMI
+    c1.xlarge:
+      Arch: AMI
+    c3.large:
+      Arch: AMI
+    c3.xlarge:
+      Arch: AMI
+    c3.2xlarge:
+      Arch: AMI
+    c3.4xlarge:
+      Arch: AMI
+    c3.8xlarge:
+      Arch: AMI
+    c4.large:
+      Arch: AMI
+    c4.xlarge:
+      Arch: AMI
+    c4.2xlarge:
+      Arch: AMI
+    c4.4xlarge:
+      Arch: AMI
+    c4.8xlarge:
+      Arch: AMI
+    g2.2xlarge:
+      Arch: AMI
+    g2.8xlarge:
+      Arch: AMI
+    r3.large:
+      Arch: AMI
+    r3.xlarge:
+      Arch: AMI
+    r3.2xlarge:
+      Arch: AMI
+    r3.4xlarge:
+      Arch: AMI
+    r3.8xlarge:
+      Arch: AMI
+    i2.xlarge:
+      Arch: AMI
+    i2.2xlarge:
+      Arch: AMI
+    i2.4xlarge:
+      Arch: AMI
+    i2.8xlarge:
+      Arch: AMI
+    d2.xlarge:
+      Arch: AMI
+    d2.2xlarge:
+      Arch: AMI
+    d2.4xlarge:
+      Arch: AMI
+    d2.8xlarge:
+      Arch: AMI
+    hi1.4xlarge:
+      Arch: AMI
+    hs1.8xlarge:
+      Arch: AMI
+    cr1.8xlarge:
+      Arch: AMI
+    cc2.8xlarge:
+      Arch: AMI
+
+  AWSRegionArch2AMI:
+    us-east-1:
+      AMI: ami-0747bdcabd34c712a
+    us-east-2:
+      AMI: ami-0b9064170e32bde34 
+    us-west-1:
+      AMI: ami-07b068f843ec78e72 
+    us-west-2:
+      AMI: ami-090717c950a5c34d3
+    af-south-1:
+      AMI: ami-0e93b3dda12646545
+    ap-east-1:
+      AMI: ami-0e0eb5ff358583007
+    ap-south-1:
+      AMI: ami-04bde106886a53080
+    ap-northeast-2:
+      AMI: ami-0ba5cd124d7a79612
+    ap-southeast-1:
+      AMI: ami-055147723b7bca09a 
+    ap-southeast-2:
+      AMI: ami-0cf28e844a8d9afcd
+    ap-northeast-1:
+      AMI: ami-0fe22bffdec36361c
+    ca-central-1:
+      AMI: ami-0e28822503eeedddc 
+    eu-central-1:
+      AMI: ami-0b1deee75235aa4bb 
+    eu-west-1:
+      AMI: ami-0943382e114f188e8 
+    eu-west-2:
+      AMI: ami-09a56048b08f94cdf
+    eu-south-1:
+      AMI: ami-04bf32716a9886470
+    eu-west-3:
+      AMI: ami-06602da18c878f98d
+    eu-north-1:
+      AMI: ami-0afad43e7d620260c 
+    me-south-1:
+      AMI:  ami-00a33a0976ef4d65f
+    sa-east-1:
+      AMI: ami-03218e5e161496a94
+             
+Resources:
+  WebServer:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+      IamInstanceProfile: !Ref Ec2SsmInstanceProfile 
+      ImageId:
+        Fn::FindInMap:
+          - AWSRegionArch2AMI
+          - Ref: AWS::Region
+          - Fn::FindInMap:
+              - AWSInstanceType2Arch
+              - Ref: InstanceType
+              - Arch
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      UserData:
+        Fn::Base64: |
+           #!/bin/bash
+           mkdir /tmp/ssm 
+           cd /tmp/ssm
+           wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb
+           sudo dpkg -i amazon-ssm-agent.deb
+           sudo systemctl enable amazon-ssm-agent
+           sudo apt install git -y 
+           sudo apt-get update -y
+           sudo apt-get install apache2 -y      #installing apache2
+           sudo systemctl enable  apache2
+           sudo systemctl start apache2
+           chkconfig httpd on
+           sudo apt update -y 
+           sudo apt install default-jdk -y        #installing java
+           sudo apt-get update -y           
+           wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -        
+           sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+           sudo apt-get update -y
+           sudo apt-get install jenkins -y #installing jenkins
+           
+           sudo systemctl start jenkins
+           
+           sudo systemctl enable jenkins
+           sudo apt update -y
+           sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+           sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+           sudo apt update -y 
+           apt-cache policy docker-ce
+           sudo apt install docker-ce -y #installing docker 
+           cd /opt 
+           wget  https://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.66/bin/apache-tomcat-8.5.66.tar.gz
+           tar -xvzf apache-tomcat-8.5.66.tar.gz #installing tomcat
+           mv apache-tomcat-8.5.66 tomcat
+           cd /opt/tomcat/bin
+           ./startup.sh
+           
+           
+  Ec2SsmIamRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ec2.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+
+  Ec2SsmInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Path: /
+      Roles: [!Ref Ec2SsmIamRole]                  
+           
+           
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8081
+          CidrIp: 0.0.0.0/0
