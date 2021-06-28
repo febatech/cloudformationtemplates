@@ -1,10 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: AWS cloudformation template to create ec2 instance with apache,tomcat,jenkins,docker using boot strap script
 Parameters:
-  KeyName:
-    Description: The EC2 Key Pair to allow SSH access to the instance
-    Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: must be the name of an existing EC2 KeyPair.
   SSHLocation:
     Description: The IP address range that can be used to SSH to the EC2 instances
     Type: String
@@ -14,7 +10,7 @@ Parameters:
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
   InstanceType:
-    Default: 't2.micro'
+    Default: 't3.small'
     Type: String
 
 Mappings:
@@ -31,6 +27,20 @@ Mappings:
       Arch: AMI
     t2.large:
       Arch: AMI
+    t3.nano:
+      Arch: AMI
+    t3.micro:
+      Arch: AMI 
+    t3.small:
+      Arch: AMI   
+    t3.medium:
+      Arch: AMI
+    t3.large:
+      Arch: AMI  
+    t3.xlarge:
+      Arch: AMI  
+    t3.2xlarge:
+      Arch: AMI    
     m1.small:
       Arch: AMI
     m1.medium:
@@ -128,45 +138,47 @@ Mappings:
 
   AWSRegionArch2AMI:
     us-east-1:
-      AMI: ami-0747bdcabd34c712a
+      AMI: ami-0aeeebd8d2ab47354 
     us-east-2:
-      AMI: ami-0b9064170e32bde34 
+      AMI: ami-0d8d212151031f51c  
     us-west-1:
-      AMI: ami-07b068f843ec78e72 
+      AMI: ami-0b2ca94b5b49e0132 
     us-west-2:
-      AMI: ami-090717c950a5c34d3
+      AMI: ami-0800fc0fa715fdcfe
     af-south-1:
-      AMI: ami-0e93b3dda12646545
+      AMI: ami-0fcccef07c9f9a121
     ap-east-1:
-      AMI: ami-0e0eb5ff358583007
+      AMI: ami-0b014b23d42166d9f 
     ap-south-1:
-      AMI: ami-04bde106886a53080
+      AMI: ami-0ad704c126371a549
+    ap-northeast-3:
+      AMI: ami-0a4fb3ab11fbc4969
     ap-northeast-2:
-      AMI: ami-0ba5cd124d7a79612
+      AMI: ami-02af1a55fd4da5ab1 
     ap-southeast-1:
-      AMI: ami-055147723b7bca09a 
+      AMI: ami-0e8e39877665a7c92 
     ap-southeast-2:
-      AMI: ami-0cf28e844a8d9afcd
+      AMI: ami-0d2fb06f3c1484132
     ap-northeast-1:
-      AMI: ami-0fe22bffdec36361c
+      AMI: ami-001f026eaf69770b4
     ca-central-1:
-      AMI: ami-0e28822503eeedddc 
+      AMI: ami-07625b74039b1a58b 
     eu-central-1:
-      AMI: ami-0b1deee75235aa4bb 
+      AMI: ami-0bad4a5e987bdebde
     eu-west-1:
-      AMI: ami-0943382e114f188e8 
+      AMI: ami-0ac43988dfd31ab9a 
     eu-west-2:
-      AMI: ami-09a56048b08f94cdf
+      AMI: ami-089539692cca55c6c
     eu-south-1:
-      AMI: ami-04bf32716a9886470
+      AMI: ami-0c2bd6c2ff55b8bf3
     eu-west-3:
-      AMI: ami-06602da18c878f98d
+      AMI: ami-00c08ad1a6ca8ca7c
     eu-north-1:
-      AMI: ami-0afad43e7d620260c 
+      AMI: ami-0e6f4c2b6023d32fb
     me-south-1:
-      AMI:  ami-00a33a0976ef4d65f
+      AMI: ami-0e034554563fb01d5
     sa-east-1:
-      AMI: ami-03218e5e161496a94
+      AMI: ami-07bfd9965e7b972d1 
              
 Resources:
   WebServer:
@@ -174,6 +186,10 @@ Resources:
     Properties:
       SecurityGroups:
         - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: Jenkins-CICD
+      IamInstanceProfile: !Ref Ec2SsmInstanceProfile 
       ImageId:
         Fn::FindInMap:
           - AWSRegionArch2AMI
@@ -183,39 +199,60 @@ Resources:
               - Ref: InstanceType
               - Arch
       InstanceType: !Ref InstanceType
-      KeyName: !Ref KeyName
       UserData:
         Fn::Base64: |
            #!/bin/bash
-           sudo apt-get update -y
-           sudo apt-get install apache2 -y      #installing apache2
-           sudo systemctl enable  apache2
-           sudo systemctl start apache2
+           cd /tmp
+           sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+           sudo systemctl enable amazon-ssm-agent
+           sudo systemctl start amazon-ssm-agent
+           sudo yum update -y
+           sudo yum install git -y 
+           sudo yum install -y httpd
+           service httpd start
            chkconfig httpd on
-           sudo apt update -y 
-           sudo apt install default-jdk -y        #installing java
-           sudo apt-get update -y           
-           wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -        
-           sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
-           sudo apt-get update -y
-           sudo apt-get install jenkins -y #installing jenkins
-           
+           sudo yum update -y 
+           sudo yum install java-1.8.0-openjdk -y    #installing java
+           sudo yum -y install wget
+           wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo--2020-02-18 10:32:55--  https://pkg.jenkins.io/redhat-stable/jenkins.repo
+           rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+           yum -y install jenkins
            sudo systemctl start jenkins
-           
            sudo systemctl enable jenkins
-           sudo apt update -y
-           sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
-           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-           sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-           sudo apt update -y 
-           apt-cache policy docker-ce
-           sudo apt install docker-ce -y #installing docker 
+           sudo yum update -y 
+           sudo amazon-linux-extras install docker
+           sudo service docker start
+           sudo usermod -a -G docker ec2-user
+           sudo chkconfig docker on
+           sudo systemctl start docker
            cd /opt 
-           wget  https://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.66/bin/apache-tomcat-8.5.66.tar.gz
-           tar -xvzf apache-tomcat-8.5.66.tar.gz #installing tomcat
-           mv apache-tomcat-8.5.66 tomcat
+           wget https://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.68/bin/apache-tomcat-8.5.68.tar.gz
+           tar -xvzf  apache-tomcat-8.5.68.tar.gz
+           mv apache-tomcat-8.5.68 tomcat
            cd /opt/tomcat/bin
            ./startup.sh
+           
+           
+  Ec2SsmIamRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ec2.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  Ec2SsmInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Path: /
+      Roles: [!Ref Ec2SsmIamRole]                  
+           
+           
   InstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -235,6 +272,16 @@ Resources:
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 8080
-          ToPort: 8081
+          ToPort: 8080
           CidrIp: 0.0.0.0/0
-
+          
+Outputs:
+  WebServerinstanceid:
+    Description: The Instance ID
+    Value: !Ref WebServer
+  InstanceSecurityGroupid:
+    Description: The securitygroup ID
+    Value: !Ref InstanceSecurityGroup
+  Ec2SsmInstanceProfile:
+    Description: ec2 ssm IAM role for ec2 instance
+    Value: !Ref Ec2SsmIamRole          
